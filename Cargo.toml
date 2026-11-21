@@ -1,0 +1,26 @@
+[package]
+name = "ignite"
+version = "0.1.0"
+edition = "2021"
+description = "Ignite: forge bootable USB drives from ISO images (iced)"
+authors = ["EvolveWare <357018517+EvolveWareSolution@users.noreply.github.com>"]
+license = "GPL-3.0-or-later"
+homepage = "https://github.com/EvolveWareSolution/ignite"
+repository = "https://github.com/EvolveWareSolution/ignite"
+
+[dependencies]
+# GUI. "tokio" gives iced::time::every, "image" the logo and window icon.
+iced = { version = "0.13", features = ["tokio", "image"] }
+# Native file picker through the desktop portal (works on GNOME and KDE).
+rfd = { version = "0.15", default-features = false, features = ["xdg-portal", "tokio"] }
+
+# Reads Microsoft's answers when downloading Windows ISOs.
+serde_json = "1"
+
+[profile.release]
+opt-level = 3
+lto = true
+
+# Stops cargo from looking for a parent workspace (a stray Cargo.toml in a
+# parent folder, e.g. ~/Downloads, would otherwise break the build).
+[workspace]

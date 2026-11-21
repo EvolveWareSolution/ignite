@@ -1,0 +1,35 @@
+# One description for the .deb, .rpm and Arch packages (built by nfpm).
+# Environment: VERSION (e.g. 0.1.0).
+name: ignite
+arch: amd64
+platform: linux
+version: ${VERSION}
+section: utils
+priority: optional
+maintainer: EvolveWare <357018517+EvolveWareSolution@users.noreply.github.com>
+vendor: EvolveWare
+description: |
+  Ignite: forge bootable USB drives from ISO images.
+  Writes ISO/IMG files, builds Windows installation media and Windows To Go.
+homepage: https://github.com/EvolveWareSolution/ignite
+license: GPL-3.0-or-later
+contents:
+  - src: target/release/ignite
+    dst: /usr/bin/ignite
+    file_info: { mode: 0755 }
+  - src: ignite.desktop
+    dst: /usr/share/applications/ignite.desktop
+    file_info: { mode: 0644 }
+  - src: data/icons/hicolor/
+    dst: /usr/share/icons/hicolor/
+    type: tree
+overrides:
+  deb:
+    depends: [parted, dosfstools, udisks2, util-linux, "pkexec | policykit-1"]
+    recommends: [wimtools, ntfs-3g, exfatprogs, grub-pc-bin, curl]
+  rpm:
+    depends: [parted, dosfstools, udisks2, util-linux, polkit]
+    recommends: [wimlib-utils, ntfsprogs, ntfs-3g, exfatprogs, grub2-pc, curl]
+  archlinux:
+    depends: [parted, dosfstools, udisks2, util-linux, polkit]
+    suggests: [wimlib, ntfs-3g, exfatprogs, grub, curl]

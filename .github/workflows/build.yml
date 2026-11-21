@@ -1,0 +1,117 @@
+name: build
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  NFPM_VERSION: "2.41.1"
+
+jobs:
+  # Unit tests once, on a plain runner.
+  test:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo test --release
+
+  # Each package is built inside its own distribution, so the binary links
+  # against that distribution's glibc.
+  package:
+    needs: test
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: fedora
+            image: fedora:latest
+            format: rpm
+            deps: dnf -y install gcc pkgconf-pkg-config curl tar gzip libxkbcommon-devel
+          - name: ubuntu
+            # the oldest supported LTS: the binary then runs on newer Ubuntu/Debian too
+            image: ubuntu:22.04
+            format: deb
+            deps: apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y build-essential pkg-config curl ca-certificates libxkbcommon-dev
+          - name: arch
+            image: archlinux:latest
+            format: archlinux
+            deps: pacman -Syu --noconfirm --needed base-devel curl libxkbcommon
+    runs-on: ubuntu-latest
+    container: ${{ matrix.image }}
+    steps:
+      - name: System packages
+        run: ${{ matrix.deps }}
+
+      - uses: actions/checkout@v4
+
+      - name: Rust toolchain
+        run: |
+          curl -sSf https://sh.rustup.rs | sh -s -- -y --profile minimal
+          echo "$HOME/.cargo/bin" >> "$GITHUB_PATH"
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: ${{ matrix.name }}
+
+      - name: Build
+        run: cargo build --release --locked
+
+      - name: Version
+        id: v
+        run: |
+          if [ "${GITHUB_REF_TYPE}" = "tag" ]; then v="${GITHUB_REF_NAME#v}"
+          else v="$(sed -n 's/^version = "\(.*\)"/\1/p' Cargo.toml | head -1)"; fi
+          echo "version=$v" >> "$GITHUB_OUTPUT"
+
+      - name: Install nfpm
+        run: |
+          curl -sSfL "https://github.com/goreleaser/nfpm/releases/download/v${NFPM_VERSION}/nfpm_${NFPM_VERSION}_Linux_x86_64.tar.gz" \
+            | tar xz -C /usr/local/bin nfpm
+
+      - name: Package (${{ matrix.format }})
+        env:
+          VERSION: ${{ steps.v.outputs.version }}
+        run: |
+          mkdir -p dist
+          strip target/release/ignite
+          nfpm package -f packaging/nfpm.yaml -p ${{ matrix.format }} -t dist/
+          # a plain tarball of the binary as well
+          tar czf "dist/ignite-${VERSION}-${{ matrix.name }}-x86_64.tar.gz" \
+            -C target/release ignite -C ../.. ignite.desktop data/icons
+          ls -l dist
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ignite-${{ matrix.name }}
+          path: dist/*
+          if-no-files-found: error
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: package
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+      - name: Source archive
+        run: |
+          v="${GITHUB_REF_NAME#v}"
+          git archive --format=tar.gz --prefix="ignite-${v}/" -o "dist/ignite-${v}-source.tar.gz" HEAD
+          cd dist && sha256sum * > SHA256SUMS
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*
+          generate_release_notes: true

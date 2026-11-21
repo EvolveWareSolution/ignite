@@ -1,0 +1,16 @@
+[Desktop Entry]
+Type=Application
+Name=Ignite
+GenericName=USB Image Writer
+Comment=Forge bootable USB drives from ISO images
+Exec=ignite
+Icon=ignite
+Terminal=false
+Categories=System;Utility;
+Keywords=usb;iso;dd;bootable;writer;forge;ignite;
+StartupWMClass=ignite
+Actions=Compact;
+
+[Desktop Action Compact]
+Name=Compact floating window
+Exec=ignite --compact
