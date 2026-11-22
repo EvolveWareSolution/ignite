@@ -1,7 +1,23 @@
 # Ignite
 
+[![Build](https://github.com/EvolveWareSolution/ignite/actions/workflows/build.yml/badge.svg)](https://github.com/EvolveWareSolution/ignite/actions/workflows/build.yml)
+[![Release](https://img.shields.io/github/v/release/EvolveWareSolution/ignite?color=f97316)](https://github.com/EvolveWareSolution/ignite/releases/latest)
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
+![Platform](https://img.shields.io/badge/platform-Linux-lightgrey?logo=linux&logoColor=white)
+![Rust](https://img.shields.io/badge/Rust-1.85%2B-orange?logo=rust&logoColor=white)
+![Distros](https://img.shields.io/badge/Fedora%20%7C%20Ubuntu%20%7C%20Arch-supported-informational)
+
 Forge bootable USB drives from ISO images: a graphical, safer `dd`
 (Rust + [iced](https://iced.rs)).
+
+## Screenshots
+
+<p align="center">
+  <img src="docs/screenshots/standard.png" alt="Ignite: write an ISO to a USB drive" width="48%">
+  &nbsp;
+  <img src="docs/screenshots/windows.png" alt="Ignite: Windows page with ISO download and customisation options" width="48%">
+</p>
+<p align="center"><sub>Left: the standard page. Right: the Windows page (installer media, Windows To Go, ISO download).</sub></p>
 
 ## Features
 
