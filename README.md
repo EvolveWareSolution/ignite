@@ -88,6 +88,53 @@ Code: `winopts.rs` (options, validation, arguments, regional detection),
 `hive.rs` + `bcd.rs` (BCD store writer), `wtg.rs` (Windows To Go). Test with a
 loop device and an extracted tree: see `loop_device_end_to_end` in `winworker.rs`.
 
+## Requirements (system tools)
+
+Ignite calls these programs; they must be installed on the computer.
+
+**Needed for everything** (writing an image, Restore):
+
+| Tool | Used for | Fedora | Debian / Ubuntu | Arch | openSUSE |
+|---|---|---|---|---|---|
+| `parted`, `partprobe` | partition tables | `parted` | `parted` | `parted` | `parted` |
+| `mkfs.vfat` | FAT32 | `dosfstools` | `dosfstools` | `dosfstools` | `dosfstools` |
+| `lsblk`, `wipefs`, `mount`, `umount`, `sfdisk` | listing and cleaning drives | `util-linux` | `util-linux` | `util-linux` | `util-linux` |
+| `udisksctl` | unmount, power off the drive | `udisks2` | `udisks2` | `udisks2` | `udisks2` |
+| `pkexec` (or `sudo`) | administrator rights for the copy only | `polkit` | `pkexec` (older: `policykit-1`) | `polkit` | `polkit` |
+
+**Only for the Windows modes** (ISO mode, Windows To Go, Download):
+
+| Tool | Used for | Fedora | Debian / Ubuntu | Arch | openSUSE |
+|---|---|---|---|---|---|
+| `wimlib-imagex` | split / edit / apply `install.wim` and `boot.wim` | `wimlib-utils` | `wimtools` | `wimlib` | `wimlib` |
+| `mkfs.ntfs`, `ntfs-3g` | NTFS drives and Windows To Go | `ntfsprogs` `ntfs-3g` | `ntfs-3g` | `ntfs-3g` | `ntfs-3g` `ntfs-3g_ntfsprogs` |
+| `mkfs.exfat` | exFAT drives | `exfatprogs` | `exfatprogs` | `exfatprogs` | `exfatprogs` |
+| `grub-install` / `grub2-install` | legacy BIOS boot (BIOS targets only) | `grub2-pc` | `grub-pc-bin` | `grub` | `grub2-i386-pc` |
+| `curl` | downloading Windows ISOs | `curl` | `curl` | `curl` | `curl` |
+
+The kernel must also be able to mount UDF / ISO 9660 (to read the Windows ISO), FAT32, exFAT and
+NTFS (`ntfs3` or `ntfs-3g`); every normal desktop kernel can.
+
+If a tool is missing, Ignite says which one before anything is erased. `install.sh` installs
+all of the above on Fedora, Debian/Ubuntu, Arch and openSUSE (the Windows tools on a best-effort basis).
+Installing the `.rpm` / `.deb` / Arch package pulls in the first table automatically and suggests the second.
+
+## Install from a release
+
+Download the package for your distribution from the
+[Releases](https://github.com/EvolveWareSolution/ignite/releases) page:
+
+```
+sudo dnf install ./ignite-0.1.0-1.x86_64.rpm            # Fedora and other rpm based systems
+sudo apt install ./ignite_0.1.0_amd64.deb               # Ubuntu, Debian, Mint
+sudo pacman -U ignite-0.1.0-1-x86_64.pkg.tar.zst        # Arch, Manjaro
+```
+
+(The file names carry the version of the release you downloaded.)
+If the menu icon does not show up right after installing, log out and in once.
+Start it from the menu ("Ignite") or with `ignite`. Every release also has a
+`SHA256SUMS` file and the source archive.
+
 ## Install (Fedora, Arch, Debian/Ubuntu, openSUSE)
 
 ```
